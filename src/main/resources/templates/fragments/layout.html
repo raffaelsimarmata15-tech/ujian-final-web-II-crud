@@ -1,51 +1,134 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- Header Fragment -->
 <head th:fragment="header">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product CRUD</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
 
-<!-- Navbar Fragment -->
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4"
-     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-    <div class="container">
-        <a class="navbar-brand" th:href="@{/}">Product CRUD</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/products}">Products</a>
-                </li>
-            </ul>
-            <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
-                <span class="text-light me-3">
-                    Halo, <strong th:text="${#authentication.name}">User</strong>
-                </span>
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+<body>
+
+<nav th:fragment="navbar" class="bg-gray-900 text-white shadow-md mb-8" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+
+            <div class="flex items-center space-x-8">
+                <a class="text-xl font-bold tracking-wider hover:text-gray-300 transition" th:href="@{/}">Product CRUD</a>
+
+                <div class="hidden md:flex space-x-4">
+                    <a class="hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition" th:href="@{/dashboard}">Dashboard</a>
+                    <a class="hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition" th:href="@{/products}">Products</a>
+                    <a class="hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition" th:href="@{/categories}">Categories</a>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+
+                <div class="hidden md:flex items-center space-x-4 relative" sec:authorize="isAuthenticated()">
+
+                    <button id="profile-dropdown-btn" class="flex items-center text-gray-300 hover:text-white transition focus:outline-none">
+                        <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-2 overflow-hidden border-2 border-gray-600">
+                            <span th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="text-sm font-medium mr-1" th:text="${#authentication.name}">User</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div id="profile-dropdown-menu" class="hidden absolute right-0 top-10 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-xs text-gray-500">Login sebagai</p>
+                            <p class="text-sm font-bold text-gray-900 truncate" th:text="${#authentication.name}">User</p>
+                        </div>
+                        <a th:href="@{/profile}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition">Lihat Profil</a>
+                        <a th:href="@{/profile/edit}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition">Edit Profil</a>
+                        <a th:href="@{/profile/change-password}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition">Ganti Password</a>
+                        <div class="border-t border-gray-100 mt-1"></div>
+                        <form th:action="@{/logout}" method="post" class="m-0 w-full">
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white focus:outline-none ml-4">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden pb-4">
+            <a class="block hover:bg-gray-800 px-3 py-2 rounded-md text-base font-medium transition" th:href="@{/dashboard}">Dashboard</a>
+            <a class="block hover:bg-gray-800 px-3 py-2 rounded-md text-base font-medium transition" th:href="@{/products}">Products</a>
+            <a class="block hover:bg-gray-800 px-3 py-2 rounded-md text-base font-medium transition" th:href="@{/categories}">Categories</a>
+
+            <div class="pt-4 mt-2 border-t border-gray-700" sec:authorize="isAuthenticated()">
+                <a th:href="@{/profile}" class="block hover:bg-gray-800 px-3 py-2 rounded-md text-base font-medium transition text-blue-400">
+                    Lihat Profil
+                </a>
+                <a th:href="@{/profile/edit}" class="block hover:bg-gray-800 px-3 py-2 rounded-md text-base font-medium transition text-blue-400">
+                    Edit Profil
+                </a>
+
+                <div class="px-3 py-2 text-base font-medium text-gray-300 mt-2">
+                    Halo, <strong class="text-white" th:text="${#authentication.name}">User</strong>
+                </div>
+
+                <form th:action="@{/logout}" method="post" class="px-3 mt-2">
+                    <button type="submit" class="w-full text-left border border-gray-500 hover:bg-gray-800 text-white text-base font-medium py-2 px-4 rounded transition text-red-400">
+                        Logout
+                    </button>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Script Menu Mobile
+            const btnMobile = document.getElementById('mobile-menu-btn');
+            const menuMobile = document.getElementById('mobile-menu');
+            if(btnMobile && menuMobile) {
+                btnMobile.addEventListener('click', () => {
+                    menuMobile.classList.toggle('hidden');
+                });
+            }
+
+            // Script Dropdown Profil Desktop
+            const btnDropdown = document.getElementById('profile-dropdown-btn');
+            const menuDropdown = document.getElementById('profile-dropdown-menu');
+
+            if (btnDropdown && menuDropdown) {
+                // Buka/tutup dropdown saat tombol diklik
+                btnDropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    menuDropdown.classList.toggle('hidden');
+                });
+
+                // Tutup dropdown otomatis jika user klik area lain di luar menu
+                document.addEventListener('click', (e) => {
+                    if (!btnDropdown.contains(e.target) && !menuDropdown.contains(e.target)) {
+                        menuDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 </nav>
 
-<!-- Footer Fragment -->
-<footer th:fragment="footer">
-    <div class="container">
-        <hr>
-        <p class="text-center text-muted py-3">Product CRUD - Praktikum JPA Fundamentals - 2026</p>
+<footer th:fragment="footer" class="mt-auto">
+    <div class="container mx-auto px-4">
+        <hr class="border-gray-200">
+        <p class="text-center text-gray-500 text-sm py-6">Product CRUD - Praktikum JPA Fundamentals - 2026</p>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </footer>
 
+</body>
 </html>
