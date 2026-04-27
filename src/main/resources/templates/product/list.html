@@ -2,77 +2,140 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: header}">
 </head>
-<body>
-    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
 
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Daftar Produk</h2>
-            <a th:href="@{/products/new}" class="btn btn-success">
-                + Tambah Produk Baru
-            </a>
-        </div>
+<main class="flex-grow container mx-auto px-4 py-8">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-900">Daftar Produk</h2>
+        <a th:href="@{/products/new}" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Produk
+        </a>
+    </div>
 
-        <!-- Flash Messages -->
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <span th:text="${successMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <span th:text="${errorMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div th:if="${successMessage}" id="alert-success" class="flex justify-between items-center bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm">
+        <span th:text="${successMessage}"></span>
+        <button onclick="document.getElementById('alert-success').style.display='none'" class="text-green-700 hover:text-green-900 font-bold">&times;</button>
+    </div>
+    <div th:if="${errorMessage}" id="alert-error" class="flex justify-between items-center bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
+        <span th:text="${errorMessage}"></span>
+        <button onclick="document.getElementById('alert-error').style.display='none'" class="text-red-700 hover:text-red-900 font-bold">&times;</button>
+    </div>
 
-        <!-- Product Count -->
-        <p class="text-muted">
-            Total produk: <strong th:text="${#lists.size(products)}">0</strong>
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+        <form th:action="@{/products}" method="get" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-grow">
+                <input type="text" name="keyword" th:value="${keyword}"
+                       placeholder="Cari nama produk..."
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+            </div>
+
+            <div class="w-full md:w-56">
+                <select name="category"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none transition bg-white">
+                    <option value="">-- Semua Kategori --</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.name}"
+                            th:selected="${cat == selectedCategory}"></option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition">
+                    Cari
+                </button>
+                <a th:href="@{/products}" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-6 rounded-md transition text-center flex items-center">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+        <p class="text-sm text-gray-500">
+            Menampilkan halaman <strong class="text-gray-900" th:text="${currentPage + 1}">1</strong>
+            dari <strong class="text-gray-900" th:text="${totalPages == 0 ? 1 : totalPages}">1</strong>
+            (Total <strong class="text-gray-900" th:text="${totalItems}">0</strong> produk ditemukan)
         </p>
+    </div>
 
-        <!-- Product Table -->
-        <div th:if="${!#lists.isEmpty(products)}">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Stok</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
+    <div th:if="${totalItems > 0}" class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">No</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">Nama</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">Kategori</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">Harga</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">Stok</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                    <th class="py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider text-center">Aksi</th>
+                </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="product, iterStat : ${products}">
-                        <td th:text="${iterStat.index + 1}">1</td>
-                        <td th:text="${product.name}">Nama Produk</td>
-                        <td th:text="${product.category?.displayName}">Kategori</td>
-                        <td th:text="${'Rp ' + #numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')}">Rp 0</td>
-                        <td th:text="${product.stock}">0</td>
-                        <td>
-                            <span th:if="${product.active}" class="badge bg-success">Aktif</span>
-                            <span th:unless="${product.active}" class="badge bg-danger">Tidak Aktif</span>
-                        </td>
-                        <td>
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-info btn-sm">Detail</a>
-                            <a th:href="@{/products/{id}/edit(id=${product.id})}" class="btn btn-warning btn-sm">Edit</a>
-                            <form th:action="@{/products/{id}/delete(id=${product.id})}" method="post" style="display:inline;"
-                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
+                <tbody class="bg-white divide-y divide-gray-200">
+                <tr th:each="product, iterStat : ${products}" class="hover:bg-gray-50 transition">
+                    <td class="py-3 px-4 text-sm text-gray-500" th:text="${(currentPage * 10) + iterStat.index + 1}">1</td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-900" th:text="${product.name}">Nama Produk</td>
+                    <td class="py-3 px-4 text-sm text-gray-500" th:text="${product.category?.name}">Kategori</td>
+                    <td class="py-3 px-4 text-sm text-gray-900 font-semibold" th:text="${'Rp ' + #numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')}">Rp 0</td>
+                    <td class="py-3 px-4 text-sm text-gray-500" th:text="${product.stock}">0</td>
+                    <td class="py-3 px-4 text-sm">
+                        <span th:if="${product.active}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                        <span th:unless="${product.active}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Tidak Aktif</span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-center space-x-1 whitespace-nowrap">
+                        <a th:href="@{/products/{id}(id=${product.id})}" class="inline-block bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-3 rounded text-xs font-medium transition">Detail</a>
+                        <a th:href="@{/products/{id}/edit(id=${product.id})}" class="inline-block bg-yellow-100 hover:bg-yellow-200 text-yellow-700 py-1 px-3 rounded text-xs font-medium transition">Edit</a>
+                        <form th:action="@{/products/{id}/delete(id=${product.id})}" method="post" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
+                            <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-700 py-1 px-3 rounded text-xs font-medium transition">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>
-
-        <!-- Empty State -->
-        <div th:if="${#lists.isEmpty(products)}" class="text-center py-5">
-            <p class="text-muted fs-5">Belum ada produk.</p>
-            <a th:href="@{/products/new}" class="btn btn-primary">Tambah Produk Pertama</a>
-        </div>
     </div>
 
-    <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <div th:if="${totalItems == 0}" class="bg-white text-center py-16 px-4 shadow-sm border border-gray-200 rounded-lg mt-4">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+
+        <p th:if="${keyword != null or selectedCategory != null}" class="text-gray-500 text-lg mb-4">Tidak ada produk yang cocok dengan pencarian Anda.</p>
+        <p th:unless="${keyword != null or selectedCategory != null}" class="text-gray-500 text-lg mb-4">Belum ada produk yang ditambahkan.</p>
+
+        <a th:href="@{/products/new}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md shadow transition">Tambah Produk</a>
+    </div>
+
+    <div th:if="${totalPages > 1}" class="flex justify-center mt-8">
+        <nav class="inline-flex rounded-md shadow-sm border border-gray-200">
+
+            <a th:href="@{/products(page=${currentPage - 1}, keyword=${keyword}, category=${selectedCategory?.id})}"
+               th:classappend="${currentPage == 0} ? 'pointer-events-none bg-gray-50 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'"
+               class="px-4 py-2 border-r border-gray-200 text-sm font-medium rounded-l-md transition">
+                Previous
+            </a>
+
+            <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <a th:href="@{/products(page=${i}, keyword=${keyword}, category=${selectedCategory?.id})}"
+                   th:text="${i + 1}"
+                   th:classappend="${currentPage == i} ? 'bg-blue-600 text-white pointer-events-none border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-100 border-r border-gray-200'"
+                   class="px-4 py-2 text-sm font-medium transition border-y">
+                </a>
+            </th:block>
+
+            <a th:href="@{/products(page=${currentPage + 1}, keyword=${keyword}, category=${selectedCategory?.id})}"
+               th:classappend="${currentPage + 1 == totalPages} ? 'pointer-events-none bg-gray-50 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'"
+               class="px-4 py-2 text-sm font-medium rounded-r-md border-l border-gray-200 transition">
+                Next
+            </a>
+
+        </nav>
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>
